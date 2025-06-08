@@ -1,0 +1,173 @@
+@page
+@using GameBrain
+@model WebApp.Pages.PlayGame
+
+<style>
+    .tic-tac-toe-table {
+        width: 300px;
+        height: 300px;
+        border-collapse: collapse;
+        margin: 20px auto;
+    }
+    .tic-tac-toe-table td {
+        width: calc(100% / @Model.TicTacToeBrain.DimX);
+        height: calc(100% / @Model.TicTacToeBrain.DimY);
+        text-align: center;
+        vertical-align: middle;
+        font-size: 24px;
+        border: 2px solid #000;
+        padding: 0;
+    }
+    .tic-tac-toe-table .big-board {
+        background-color: lightblue;
+    }
+    .tic-tac-toe-table form {
+        width: 100%;
+        height: 100%;
+    }
+    .tic-tac-toe-table button {
+        width: 100%;
+        height: 100%;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+    }
+    .game-over-buttons {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    .game-over-buttons button {
+        margin: 0 10px;
+        padding: 10px 20px;
+        font-size: 18px;
+        cursor: pointer;
+    }
+    .center-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+</style>
+<div class="text-center">
+    <h1 class="display-4">TIC-TAC-TOE</h1>
+</div>
+@if (!Model.GameOver)
+{
+    <div class="center-content">
+        <div>
+            Move by: @Model.TicTacToeBrain.GetCurrentPlayer()
+        </div>
+    </div>
+    <div>
+        <table class="tic-tac-toe-table">
+            @for (var y = 0; y < Model.TicTacToeBrain.DimY; y++)
+            {
+                <tr>
+                    @for (var x = 0; x < Model.TicTacToeBrain.DimX; x++)
+                    {
+                        <td class="@(Model.TicTacToeBrain.GameBoard[x][y].AreaType == EBoardAreaType.BigBoard ? "big-board" : "")">
+                            @if (Model.TicTacToeBrain.GameBoard[x][y].Piece == EGamePiece.Empty)
+                            {
+                                <form method="post">
+                                    <input asp-for="X" value="@x" type="hidden"/>
+                                    <input asp-for="Y" value="@y" type="hidden"/>
+                                    <input asp-for="GameId" value="@Model.GameId" type="hidden"/>
+                                    <button type="submit"></button>
+                                </form>
+                            }
+                            else
+                            {
+                                @if (Model.TicTacToeBrain.GetCurrentPlayer().PiecesOnBoard >= 2 
+                                     && Model.TicTacToeBrain.GameBoard[x][y].Piece 
+                                     == Model.TicTacToeBrain.GetCurrentPlayer().Piece 
+                                     && Model.MoveType != EMoveType.Coordinates)
+                                {
+                                    <form method="post">
+                                        <input asp-for="X" value="@x" type="hidden"/>
+                                        <input asp-for="Y" value="@y" type="hidden"/>
+                                        <input asp-for="GameId" value="@Model.GameId" type="hidden"/>
+                                        <input asp-for="MoveType" value="@EMoveType.PieceMove" type="hidden"/>
+                                        <button type="submit">@Model.TicTacToeBrain.GameBoard[x][y].Piece</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    @(Model.TicTacToeBrain.GameBoard[x][y].Piece)
+                                }
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </table>
+    </div>
+    <div class="center-content">
+        @if (Model.TicTacToeBrain.GetCurrentPlayer().PiecesOnBoard >= 2
+             && Model.MoveType != EMoveType.Coordinates)
+        {
+            <div class="col-md-4">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="GridMoveChoice" class="control-label"></label>
+                        <select asp-for="GridMoveChoice" class="form-select" asp-items="Model.GridMoveOptions"></select>
+                        <input asp-for="GameId" value="@Model.GameId" type="hidden"/>
+                        <input asp-for="MoveType" value="@EMoveType.GridMove" type="hidden"/>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="submit" value="Move Grid" class="btn btn-primary"/>
+                    </div>
+                </form>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div>
+        <table class="tic-tac-toe-table">
+            @for (var y = 0; y < Model.TicTacToeBrain.DimY; y++)
+            {
+                <tr>
+                    @for (var x = 0; x < Model.TicTacToeBrain.DimX; x++)
+                    {
+                        <td class="@(Model.TicTacToeBrain.GameBoard[x][y].AreaType == EBoardAreaType.BigBoard ? "big-board" : "")">
+                            @if (Model.TicTacToeBrain.GameBoard[x][y].Piece == EGamePiece.Empty)
+                            {
+                                <!-- empty -->
+                            }
+                            else
+                            {
+                                @(Model.TicTacToeBrain.GameBoard[x][y].Piece)
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </table>
+        @if (!string.IsNullOrWhiteSpace(Model.WinAlert))
+        {
+            <div class="alert alert-success" role="alert">
+                @Model.WinAlert
+            </div>
+        }
+        
+        <div class="game-over-buttons">
+            <form method="post">
+                <input asp-for="Continue" value="0" type="hidden"/>
+                <input asp-for="GameOver" value="true" type="hidden"/>
+                <button type="submit">Exit</button>
+            </form>
+            <form method="post">
+                <input asp-for="Continue" value="1" type="hidden"/>
+                <input asp-for="GameId" value="@Model.GameId" type="hidden"/>
+                <input asp-for="GameOver" value="true" type="hidden"/>
+                <button type="submit">Continue</button>
+            </form>
+        </div>
+    </div>
+}

@@ -1,0 +1,42 @@
+@page
+@model WebApp.Pages.NewGameCreation
+
+<div class="text-center">
+    <h1 class="display-4">TIC-TAC-TOE</h1>
+</div>
+
+<h1>New Game</h1>
+@if (!string.IsNullOrWhiteSpace(Model.Error))
+{
+    <div class="alert alert-danger" role="alert">
+        @Model.Error
+    </div>
+}
+<div class="center-content">
+    <div class="row">
+        <div class="col-md-4">
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="ConfigName" class="control-label"></label>
+                    <select asp-for="ConfigName" class="form-select" asp-items="Model.ConfigSelectList"></select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="PlayerName1" class="control-label"></label>
+                    <input asp-for="PlayerName1" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="PlayerName2" class="control-label"></label>
+                    <input asp-for="PlayerName2" class="form-control" />
+                </div>
+
+
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary"/>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
